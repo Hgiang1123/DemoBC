@@ -31,17 +31,33 @@ async function main() {
     console.log(`Da them: ${s.name} (${s.code})`);
   }
 
-  // 2. Tạo Sessions
-  const sessions = ["Lap trinh Blockchain - Tuan 1", "Lap trinh Blockchain - Tuan 2"];
+  // 2. Tạo Courses
+  const courses = [
+    { name: "Lap trinh Blockchain", code: "INT1408" },
+    { name: "An toan thong tin", code: "INT1409" },
+    { name: "Phat trien ung dung Web", code: "INT1410" }
+  ];
+
+  console.log("Dang tao khoa hoc...");
+  for (const c of courses) {
+    const tx = await attendance.createCourse(c.name, c.code);
+    await tx.wait();
+    console.log(`Da tao khoa hoc: ${c.name}`);
+  }
+
+  // 3. Tạo Sessions cho Course 0 (Blockchain)
+  const sessions = ["Tuan 1: Gioi thieu", "Tuan 2: Smart Contract", "Tuan 3: DApp"];
+  console.log("Dang tao session cho khoa hoc Blockchain...");
   for (const sessionName of sessions) {
-    const tx = await attendance.createSession(sessionName);
+    // createSession(courseId, name) -> courseId 0
+    const tx = await attendance.createSession(0, sessionName);
     await tx.wait();
     console.log(`Da tao buoi hoc: ${sessionName}`);
   }
 
-  // 3. Điểm danh mẫu (lấy từ Master List)
+  // 4. Điểm danh mẫu
   console.log("Dang diem danh mau...");
-  // Điểm danh 3 sinh viên đầu tiên vào buổi 1 (ID 0)
+  // Điểm danh 3 sinh viên đầu tiên vào buổi 1 của khóa 1 (Session ID 0)
   for (let i = 0; i < 3; i++) {
     const s = masterStudents[i];
     const tx = await attendance.markAttendance(0, s.name, s.code);

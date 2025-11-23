@@ -4,18 +4,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Demo Điểm Danh Blockchain</title>
+    <title>Hệ Thống Quản Lý Đào Tạo Blockchain</title>
     <link rel="stylesheet" href="style.css">
 
     <!-- Ethers.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.11.1/ethers.umd.min.js"></script>
 
-    <!-- jQuery & Select2 (Cho Dropdown tìm kiếm) -->
+    <!-- jQuery & Select2 -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
-    <!-- FontAwesome (Icon) -->
+    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 
@@ -24,42 +24,17 @@
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar-header">
-                <h2><i class="fas fa-university"></i> Diem Danh App</h2>
+                <h2><i class="fas fa-graduation-cap"></i> LMS Blockchain</h2>
                 <p id="walletAddress" class="wallet-badge">Chưa kết nối</p>
                 <button id="connectWalletBtn" class="btn-connect">Kết nối Ví</button>
             </div>
 
             <nav class="sidebar-nav">
-                <div class="nav-section">
-                    <h3><i class="fas fa-plus-circle"></i> Tạo Buổi Học</h3>
-                    <div class="form-group">
-                        <input type="text" id="newSessionName" placeholder="Tên buổi học mới...">
-                        <button id="createSessionBtn" class="btn-small">Tạo Mới</button>
-                    </div>
+                <div class="nav-item active" onclick="switchView('view-courses')">
+                    <i class="fas fa-book"></i> Danh Sách Khóa Học
                 </div>
-
-                <div class="nav-section">
-                    <h3><i class="fas fa-list"></i> Chọn Buổi Học</h3>
-                    <div class="session-control">
-                        <select id="sessionSelect">
-                            <option value="">-- Đang tải... --</option>
-                        </select>
-                        <div class="session-actions" id="sessionActions" style="display: none;">
-                            <button id="editSessionBtn" title="Sửa tên"><i class="fas fa-edit"></i></button>
-                            <button id="deleteSessionBtn" title="Xóa buổi"><i class="fas fa-trash"></i></button>
-                        </div>
-                    </div>
-                    <p id="sessionStatus" class="status-text"></p>
-                </div>
-
-                <!-- Phần thêm sinh viên mới (Master List) -->
-                <div class="nav-section">
-                    <h3><i class="fas fa-user-plus"></i> Thêm Sinh Viên</h3>
-                    <div class="form-group">
-                        <input type="text" id="newStudentName" placeholder="Họ tên...">
-                        <input type="text" id="newStudentCode" placeholder="MSSV...">
-                        <button id="addStudentBtn" class="btn-small">Thêm vào DS</button>
-                    </div>
+                <div class="nav-item" onclick="switchView('view-students')">
+                    <i class="fas fa-users"></i> Quản Lý Sinh Viên
                 </div>
             </nav>
         </aside>
@@ -67,35 +42,125 @@
         <!-- Main Content -->
         <main class="main-content">
             <header class="top-bar">
-                <h1>Hệ Thống Điểm Danh Blockchain</h1>
+                <h1 id="pageTitle">Danh Sách Khóa Học</h1>
             </header>
 
             <div class="content-wrapper">
-                <div class="grid-container">
-                    <!-- Form Section -->
-                    <section class="attendance-form card">
-                        <h2>📝 Điểm Danh</h2>
-                        <form id="attendanceForm">
-                            <div class="form-group">
-                                <label>Chọn Sinh Viên (Tìm kiếm theo Tên hoặc MSSV)</label>
-                                <select id="studentSelect" style="width: 100%;">
-                                    <option value="">-- Chọn sinh viên --</option>
-                                    <!-- Dữ liệu Master List sẽ load vào đây -->
-                                </select>
+
+                <!-- VIEW 1: DANH SÁCH KHÓA HỌC -->
+                <div id="view-courses" class="view-section">
+                    <div class="action-bar">
+                        <button id="btnShowCreateCourse" class="btn-primary"><i class="fas fa-plus"></i> Tạo Khóa Học
+                            Mới</button>
+                    </div>
+
+                    <!-- Form tạo khóa học (Ẩn mặc định) -->
+                    <div id="createCourseForm" class="card form-card" style="display: none;">
+                        <h3>Tạo Khóa Học Mới</h3>
+                        <div class="form-group">
+                            <input type="text" id="newCourseName" placeholder="Tên khóa học (VD: Lập trình Blockchain)">
+                            <input type="text" id="newCourseCode" placeholder="Mã học phần (VD: INT1408)">
+                            <button id="btnCreateCourse" class="btn-small">Xác Nhận</button>
+                            <button onclick="$('#createCourseForm').hide()" class="btn-small btn-secondary">Hủy</button>
+                        </div>
+                    </div>
+
+                    <div class="grid-list" id="courseList">
+                        <!-- Course Items will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- VIEW 2: CHI TIẾT KHÓA HỌC (Danh sách buổi học) -->
+                <div id="view-course-details" class="view-section" style="display: none;">
+                    <button class="btn-back" onclick="switchView('view-courses')"><i class="fas fa-arrow-left"></i> Quay
+                        lại</button>
+
+                    <div class="card">
+                        <div class="card-header-flex">
+                            <div>
+                                <h2 id="detailCourseName">Tên Khóa Học</h2>
+                                <p id="detailCourseCode" class="text-muted">Mã: ...</p>
                             </div>
+                            <div class="course-actions">
+                                <button id="btnEditCourse" class="btn-icon" title="Sửa khóa học"><i
+                                        class="fas fa-edit"></i></button>
+                                <button id="btnDeleteCourse" class="btn-icon btn-danger" title="Xóa khóa học"><i
+                                        class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
 
-                            <!-- Hidden inputs để giữ logic cũ nếu cần, nhưng giờ ta lấy từ select -->
-                            <input type="hidden" id="selectedStudentName">
-                            <input type="hidden" id="selectedStudentCode">
+                        <div class="divider"></div>
 
-                            <button type="submit" id="submitBtn" class="btn-primary">Xác Nhận Điểm Danh</button>
-                        </form>
-                        <p id="statusMessage"></p>
-                    </section>
+                        <h3>Danh Sách Buổi Học</h3>
+                        <div class="form-group inline-form">
+                            <input type="text" id="newSessionName" placeholder="Tên buổi học mới...">
+                            <button id="btnCreateSession" class="btn-small">Tạo Buổi Học</button>
+                        </div>
 
-                    <!-- List Section -->
-                    <section class="student-list card">
-                        <h2>📋 Danh Sách Đã Điểm Danh (<span id="studentCount">0</span>)</h2>
+                        <ul class="session-list" id="sessionList">
+                            <!-- Session Items will be loaded here -->
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- VIEW 3: ĐIỂM DANH (Chi tiết buổi học) -->
+                <div id="view-attendance" class="view-section" style="display: none;">
+                    <button class="btn-back" onclick="backToCourseDetails()"><i class="fas fa-arrow-left"></i> Quay lại
+                        Khóa học</button>
+
+                    <div class="grid-container">
+                        <!-- Form Section -->
+                        <section class="attendance-form card">
+                            <h2 id="attendanceSessionName">Buổi học...</h2>
+                            <p id="attendanceStatus" class="status-text"></p>
+
+                            <div class="divider"></div>
+
+                            <form id="attendanceForm">
+                                <div class="form-group">
+                                    <label>Chọn Sinh Viên (Chỉ hiện SV chưa điểm danh)</label>
+                                    <select id="studentSelect" style="width: 100%;">
+                                        <option value="">-- Chọn sinh viên --</option>
+                                    </select>
+                                </div>
+                                <button type="submit" id="submitBtn" class="btn-primary">Điểm Danh</button>
+                            </form>
+                            <p id="statusMessage"></p>
+                        </section>
+
+                        <!-- List Section -->
+                        <section class="student-list card">
+                            <h2>Danh Sách Đã Điểm Danh (<span id="studentCount">0</span>)</h2>
+                            <div class="table-wrapper">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>STT</th>
+                                            <th>Họ Tên</th>
+                                            <th>MSSV</th>
+                                            <th>Thời Gian</th>
+                                            <th>Hủy</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="studentTableBody">
+                                        <!-- Data -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+
+                <!-- VIEW 4: QUẢN LÝ SINH VIÊN -->
+                <div id="view-students" class="view-section" style="display: none;">
+                    <div class="card">
+                        <h2>Danh Sách Sinh Viên (Master List)</h2>
+                        <div class="form-group inline-form">
+                            <input type="text" id="newStudentName" placeholder="Họ tên...">
+                            <input type="text" id="newStudentCode" placeholder="MSSV...">
+                            <button id="btnAddStudent" class="btn-small">Thêm Sinh Viên</button>
+                        </div>
+
                         <div class="table-wrapper">
                             <table>
                                 <thead>
@@ -103,18 +168,37 @@
                                         <th>STT</th>
                                         <th>Họ Tên</th>
                                         <th>MSSV</th>
-                                        <th>Thời Gian</th>
+                                        <th>Trạng Thái</th>
+                                        <th>Thao Tác</th>
                                     </tr>
                                 </thead>
-                                <tbody id="studentTableBody">
-                                    <!-- Dữ liệu sẽ được load vào đây -->
+                                <tbody id="masterStudentTableBody">
+                                    <!-- Data -->
                                 </tbody>
                             </table>
                         </div>
-                    </section>
+                    </div>
                 </div>
+
             </div>
         </main>
+    </div>
+
+    <!-- GENERIC MODAL -->
+    <div id="customModal" class="modal-overlay" style="display: none;">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 id="modalTitle">Tiêu đề</h3>
+                <button onclick="closeModal()" class="btn-icon"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Content injected via JS -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn-small btn-secondary" onclick="closeModal()">Hủy</button>
+                <button id="modalConfirmBtn" class="btn-small btn-primary">Xác Nhận</button>
+            </div>
+        </div>
     </div>
 
     <script src="config.js"></script>
