@@ -57,6 +57,7 @@ async function connectWallet() {
             // Load Initial Data
             await loadSessions();
             await loadMasterStudents();
+            await checkOwner();
 
         } catch (error) {
             console.error("Lỗi kết nối ví:", error);
@@ -223,6 +224,27 @@ async function loadMasterStudents() {
     }
 }
 
+// --- OWNER CHECK ---
+async function checkOwner() {
+    if (!contract || !signer) return;
+    try {
+        const owner = await contract.owner();
+        const currentAddress = await signer.getAddress();
+
+        if (owner.toLowerCase() === currentAddress.toLowerCase()) {
+            walletAddressSpan.innerHTML += ' <span style="color: #4ade80; font-weight: bold;">(Admin)</span>';
+        } else {
+            walletAddressSpan.innerHTML += ' <span style="color: #94a3b8;">(Student)</span>';
+            // Show hint
+            walletAddressSpan.innerHTML += `<br><small style="font-size: 0.7em; color: #ef4444;">Admin là: ${owner.substring(0, 6)}...${owner.substring(owner.length - 4)}</small>`;
+        }
+        console.log("Contract Owner:", owner);
+        console.log("Current Address:", currentAddress);
+    } catch (error) {
+        console.error("Error checking owner:", error);
+    }
+}
+
 addStudentBtn.addEventListener('click', async () => {
     if (!contract) { alert("Vui lòng kết nối ví!"); return; }
     const name = newStudentNameInput.value;
@@ -232,7 +254,7 @@ addStudentBtn.addEventListener('click', async () => {
 
     try {
         addStudentBtn.disabled = true;
-        addStudentBtn.innerText = "...";
+        addStudentBtn.innerText = "Đang xử lý...";
 
         const tx = await contract.addStudent(name, code);
         await tx.wait();
@@ -243,8 +265,22 @@ addStudentBtn.addEventListener('click', async () => {
         loadMasterStudents();
 
     } catch (error) {
-        console.error(error);
-        alert("Lỗi thêm sinh viên (Có thể MSSV trùng hoặc không phải giảng viên)");
+        console.error("Full Error:", error);
+
+        let msg = "Lỗi không xác định!";
+        if (error.reason) {
+            msg = error.reason;
+        } else if (error.message) {
+            if (error.message.includes("Chi giang vien moi duoc thuc hien")) {
+                msg = "Lỗi: Bạn không phải là Giảng viên (Owner)!";
+            } else if (error.message.includes("Sinh vien nay da ton tai")) {
+                msg = "Lỗi: Mã sinh viên này đã tồn tại!";
+            } else {
+                msg = "Lỗi chi tiết: " + error.message;
+            }
+        }
+
+        alert(msg);
     } finally {
         addStudentBtn.disabled = false;
         addStudentBtn.innerText = "Thêm vào DS";

@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "E:\\Project\\DemoBlockChain\\contracts\\StudentAttendance.sol": {
-      "lastModificationDate": 1763867443011,
-      "contentHash": "606acf6e1cf1c63f85fe198b449d9299",
+      "lastModificationDate": 1763869798242,
+      "contentHash": "00dafbdfe7ea1f6251d7ef674811dc42",
       "sourceName": "contracts/StudentAttendance.sol",
       "solcConfig": {
         "version": "0.8.20",
