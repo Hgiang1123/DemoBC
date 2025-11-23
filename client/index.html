@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo Điểm Danh Blockchain</title>
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Ethers.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.11.1/ethers.umd.min.js"></script>
+
+    <!-- jQuery & Select2 (Cho Dropdown tìm kiếm) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <!-- FontAwesome (Icon) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fas fa-university"></i> Diem Danh App</h2>
+                <p id="walletAddress" class="wallet-badge">Chưa kết nối</p>
+                <button id="connectWalletBtn" class="btn-connect">Kết nối Ví</button>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <h3><i class="fas fa-plus-circle"></i> Tạo Buổi Học</h3>
+                    <div class="form-group">
+                        <input type="text" id="newSessionName" placeholder="Tên buổi học mới...">
+                        <button id="createSessionBtn" class="btn-small">Tạo Mới</button>
+                    </div>
+                </div>
+
+                <div class="nav-section">
+                    <h3><i class="fas fa-list"></i> Chọn Buổi Học</h3>
+                    <div class="session-control">
+                        <select id="sessionSelect">
+                            <option value="">-- Đang tải... --</option>
+                        </select>
+                        <div class="session-actions" id="sessionActions" style="display: none;">
+                            <button id="editSessionBtn" title="Sửa tên"><i class="fas fa-edit"></i></button>
+                            <button id="deleteSessionBtn" title="Xóa buổi"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                    <p id="sessionStatus" class="status-text"></p>
+                </div>
+
+                <!-- Phần thêm sinh viên mới (Master List) -->
+                <div class="nav-section">
+                    <h3><i class="fas fa-user-plus"></i> Thêm Sinh Viên</h3>
+                    <div class="form-group">
+                        <input type="text" id="newStudentName" placeholder="Họ tên...">
+                        <input type="text" id="newStudentCode" placeholder="MSSV...">
+                        <button id="addStudentBtn" class="btn-small">Thêm vào DS</button>
+                    </div>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-bar">
+                <h1>Hệ Thống Điểm Danh Blockchain</h1>
+            </header>
+
+            <div class="content-wrapper">
+                <div class="grid-container">
+                    <!-- Form Section -->
+                    <section class="attendance-form card">
+                        <h2>📝 Điểm Danh</h2>
+                        <form id="attendanceForm">
+                            <div class="form-group">
+                                <label>Chọn Sinh Viên (Tìm kiếm theo Tên hoặc MSSV)</label>
+                                <select id="studentSelect" style="width: 100%;">
+                                    <option value="">-- Chọn sinh viên --</option>
+                                    <!-- Dữ liệu Master List sẽ load vào đây -->
+                                </select>
+                            </div>
+
+                            <!-- Hidden inputs để giữ logic cũ nếu cần, nhưng giờ ta lấy từ select -->
+                            <input type="hidden" id="selectedStudentName">
+                            <input type="hidden" id="selectedStudentCode">
+
+                            <button type="submit" id="submitBtn" class="btn-primary">Xác Nhận Điểm Danh</button>
+                        </form>
+                        <p id="statusMessage"></p>
+                    </section>
+
+                    <!-- List Section -->
+                    <section class="student-list card">
+                        <h2>📋 Danh Sách Đã Điểm Danh (<span id="studentCount">0</span>)</h2>
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>STT</th>
+                                        <th>Họ Tên</th>
+                                        <th>MSSV</th>
+                                        <th>Thời Gian</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="studentTableBody">
+                                    <!-- Dữ liệu sẽ được load vào đây -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="abi.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
